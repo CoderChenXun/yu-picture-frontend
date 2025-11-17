@@ -1,7 +1,16 @@
 <template>
   <div id="addPicturePage">
     <h2 style="margin-bottom: 16px">创建图片</h2>
-    <PictureUpload :picture="picture" :onSuccess="onSuccess" />
+    <!-- 选择上传方式 -->
+    <a-tabs v-model:activeKey="uploadType"
+      >>
+      <a-tab-pane key="file" tab="文件上传">
+        <PictureUpload :picture="picture" :onSuccess="onSuccess" />
+      </a-tab-pane>
+      <a-tab-pane key="url" tab="URL 上传" force-render>
+        <UrlPictureUpload :picture="picture" :onSuccess="onSuccess" />
+      </a-tab-pane>
+    </a-tabs>
     <a-form v-if="picture" layout="vertical" :model="pictureForm" @finish="handleSubmit">
       <a-form-item label="名称" name="name">
         <a-input v-model:value="pictureForm.name" placeholder="请输入名称" />
@@ -41,17 +50,23 @@
 
 <script setup lang="ts">
 import { onMounted, reactive } from 'vue'
-import {ref} from 'vue'
-import { editPictureUsingPost, getPictureVoByIdUsingGet, listPictureTagCategoryUsingGet } from '@/api/pictureController'
+import { ref } from 'vue'
+import {
+  editPictureUsingPost,
+  getPictureVoByIdUsingGet,
+  listPictureTagCategoryUsingGet,
+} from '@/api/pictureController'
 import { message } from 'ant-design-vue'
 import { useRoute, useRouter } from 'vue-router'
 import PictureUpload from '@/components/PictureUpload.vue'
+import UrlPictureUpload from '@/components/UrlPictureUpload.vue'
 
 // 定义返回的PictureVo信息
 const picture = ref<API.PictureVo>()
 const pictureForm = reactive<API.PictureEditRequest>({})
 const tagOptions = ref<String[]>([])
 const categoryOptions = ref<String[]>([])
+const uploadType = ref<'file' | 'url'>('file')
 
 const onSuccess = (newPicture: API.PictureVo) => {
   picture.value = newPicture
@@ -60,28 +75,28 @@ const onSuccess = (newPicture: API.PictureVo) => {
 
 const router = useRouter()
 
-const handleSubmit = async (values : any) => {
-  const pictureId = picture.value.id;
-  if(!pictureId) {
+const handleSubmit = async (values: any) => {
+  const pictureId = picture.value.id
+  if (!pictureId) {
     return
   }
   const res = await editPictureUsingPost({
     id: pictureId,
     ...values,
   })
-  if(res.data.code === 0 && res.data.data) {
-    message.success("创建成功")
+  if (res.data.code === 0 && res.data.data) {
+    message.success('创建成功')
     router.push({
       path: `/picture/${pictureId}`,
     })
-  }else {
-    message.error("创建失败" + res.data.message)
+  } else {
+    message.error('创建失败' + res.data.message)
   }
 }
 
 const getTagCategoryOptions = async () => {
   const res = await listPictureTagCategoryUsingGet()
-  if(res.data.code === 0 && res.data.data) {
+  if (res.data.code === 0 && res.data.data) {
     tagOptions.value = (res.data.data.tagList ?? []).map((data: string) => {
       return {
         value: data,
@@ -94,8 +109,8 @@ const getTagCategoryOptions = async () => {
         label: data,
       }
     })
-  }else {
-    message.error("加载选项失败，" + res.data.message)
+  } else {
+    message.error('加载选项失败，' + res.data.message)
   }
 }
 
@@ -104,15 +119,15 @@ const route = useRoute()
 // 查询要修改的图片数据
 const getOldPicture = async () => {
   // 从route中查询id
-  const pictureId = route.query?.id;
-  if(!pictureId) {
+  const pictureId = route.query?.id
+  if (!pictureId) {
     return
   }
   // pictureId存在
   const res = await getPictureVoByIdUsingGet({
     id: pictureId,
   })
-  if(res.data.code === 0 && res.data.data) {
+  if (res.data.code === 0 && res.data.data) {
     const data = res.data.data
     picture.value = data
     pictureForm.name = data.name
