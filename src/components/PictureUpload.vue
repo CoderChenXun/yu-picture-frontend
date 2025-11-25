@@ -17,33 +17,33 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue';
-import { PlusOutlined, LoadingOutlined } from '@ant-design/icons-vue';
-import { message } from 'ant-design-vue';
-import type { UploadChangeParam, UploadProps } from 'ant-design-vue';
+import { ref } from 'vue'
+import { PlusOutlined, LoadingOutlined } from '@ant-design/icons-vue'
+import { message } from 'ant-design-vue'
+import type { UploadProps } from 'ant-design-vue'
 import { uploadUsingPost } from '@/api/pictureController'
 
 // 其中，picture就是已上传的图片信息，会展示出来；onSuccess是上传成功后，需要将得到的新图片信息返回给
 // 父组件，来更新picture的值。
 interface Props {
-  picture?: API.PictureVo;
-  onSuccess?: (newPicture:API.PictureVo) => void;
+  picture?: API.PictureVO
+  spaceId?: number
+  onSuccess?: (newPicture: API.PictureVO) => void
 }
 const props = defineProps<Props>()
 
-
-const loading = ref<boolean>(false);
+const loading = ref<boolean>(false)
 // 图片上传前的校验逻辑
 const beforeUpload = (file: UploadProps['fileList'][number]) => {
-  const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
+  const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png'
   if (!isJpgOrPng) {
-    message.error('不支持上传该格式的文件，推荐上传 jpeg 和 png 文件！');
+    message.error('不支持上传该格式的文件，推荐上传 jpeg 和 png 文件！')
   }
-  const isLt2M = file.size / 1024 / 1024 < 2;
+  const isLt2M = file.size / 1024 / 1024 < 2
   if (!isLt2M) {
-    message.error('不能上传超过2MB的图片');
+    message.error('不能上传超过2MB的图片')
   }
-  return isJpgOrPng && isLt2M;
+  return isJpgOrPng && isLt2M
 }
 
 /**
@@ -53,7 +53,9 @@ const beforeUpload = (file: UploadProps['fileList'][number]) => {
 const handleUpload = async ({ file }: any) => {
   loading.value = true
   try {
-    const params: API.uploadUsingPOSTParams = props.picture ? { id: props.picture.id } : {};
+    // 上传时传递 spaceId
+    const params: API.PictureUploadRequest = props.picture ? { id: props.picture.id } : {}
+    params.spaceId = props.spaceId
     const res = await uploadUsingPost(params, {}, file)
     if (res.data.code === 0 && res.data.data) {
       message.success('图片上传成功')
@@ -92,6 +94,4 @@ const handleUpload = async ({ file }: any) => {
   margin-top: 8px;
   color: #666;
 }
-
 </style>
-

@@ -28,41 +28,15 @@
     </a-space>
   </div>
   <!-- 图片列表 -->
-  <a-list
-    :grid="{ gutter: 16, xs: 1, sm: 2, md: 3, lg: 4, xl: 5, xxl: 6 }"
-    :data-source="dataList"
-    :pagination="pagination"
-    :loading="loading"
-  >
-    <template #renderItem="{ item: picture }">
-      <a-list-item style="padding: 0">
-        <!-- 单张图片 -->
-        <a-card hoverable @click="doClickPicture(picture)">
-          <template #cover>
-            <img
-              style="height: 180px; object-fit: cover"
-              :alt="picture.name"
-              :src="picture.thumbnailUrl ?? picture.url"
-              loading="lazy"
-            />
-          </template>
-          <a-card-meta :title="picture.name">
-            <template #description>
-              <a-flex>
-                <a-tag color="green">
-                  {{ picture.category ?? '默认' }}
-                </a-tag>
-                <a-tag v-for="tag in picture.tags" :key="tag">
-                  {{ tag }}
-                </a-tag>
-              </a-flex>
-            </template>
-          </a-card-meta>
-        </a-card>
-      </a-list-item>
-
-    </template>
-  </a-list>
+  <!-- 图片列表 -->
+  <PictureList :dataList="dataList" :loading="loading" />
+  <a-pagination
+    style="text-align: right"
+    v-model:current="searchParams.current"
+    v-model:pageSize="searchParams.pageSize"
+    :total="total"
+    @change="onPageChange"
+  />
 </template>
 
 <script setup lang="ts">
@@ -70,6 +44,7 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { listPictureTagCategoryUsingGet, listPictureVoUsingPost } from '@/api/pictureController'
 import { message } from 'ant-design-vue'
 import { useRouter } from 'vue-router'
+import PictureList from '@/components/PictureList.vue'
 
 const dataList = ref([])
 const total = ref()
@@ -159,6 +134,14 @@ const doClickPicture = (picture) => {
   router.push({
     path: `/picture/${picture.id}`,
   })
+}
+
+const onPageChange = (page: number, pageSize: number) => {
+  // 更新搜索参数中的当前页和每页条数
+  searchParams.current = page;
+  searchParams.pageSize = pageSize;
+  // 重新请求数据（复用已有的 fetchData 逻辑，自动携带最新分页参数）
+  fetchData();
 }
 </script>
 

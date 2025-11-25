@@ -16,12 +16,13 @@
   </div>
 </template>
 <script lang="ts" setup>
-import { ref } from 'vue'
+import {  ref } from 'vue'
 import { message } from 'ant-design-vue'
 import { uploadPictureByUrlUsingPost } from '@/api/pictureController.ts'
 
 interface Props {
   picture?: API.PictureVO
+  spaceId: number
   onSuccess?: (newPicture: API.PictureVO) => void
 }
 
@@ -39,6 +40,7 @@ const handleUpload = async () => {
     const params: API.PictureUploadRequest = { fileUrl: fileUrl.value }
     if (props.picture) {
       params.id = props.picture.id
+      params.spaceId = props.spaceId
     }
     const res = await uploadPictureByUrlUsingPost(params)
     if (res.data.code === 0 && res.data.data) {

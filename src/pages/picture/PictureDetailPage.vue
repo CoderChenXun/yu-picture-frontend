@@ -3,10 +3,7 @@
     <!-- 图片展示区 -->
     <a-col :sm="24" :md="16" :xl="18">
       <a-card title="图片预览">
-        <a-image
-          style="max-height: 600px; object-fit: contain"
-          :src="picture.url"
-        />
+        <a-image style="max-height: 600px; object-fit: contain" :src="picture.url" />
       </a-card>
     </a-col>
     <!-- 图片信息区 -->
@@ -48,6 +45,19 @@
           <a-descriptions-item label="大小">
             {{ formatSize(picture.picSize) }}
           </a-descriptions-item>
+          <a-descriptions-item label="主色调">
+            <a-space>
+              {{ picture.picColor ?? '-' }}
+              <div
+                v-if="picture.picColor"
+                :style="{
+        backgroundColor: toHexColor(picture.picColor),
+        width: '16px',
+        height: '16px',
+      }"
+              />
+            </a-space>
+          </a-descriptions-item>
         </a-descriptions>
       </a-card>
       <a-space wrap>
@@ -70,10 +80,8 @@
           </template>
         </a-button>
       </a-space>
-
     </a-col>
   </a-row>
-
 </template>
 
 <script setup lang="ts">
@@ -83,6 +91,7 @@ import { message } from 'ant-design-vue'
 import { downloadImage, formatSize } from '@/utils'
 import { useLoginUserStore } from '@/stores/useLoginUserStore'
 import { useRouter } from 'vue-router'
+import { toHexColor } from '@/utils/color'
 
 const props = defineProps<{
   id: string | number
@@ -97,12 +106,12 @@ const fetchPictureDetail = async () => {
     const res = await getPictureVoByIdUsingGet({
       id: props.id,
     })
-    if(res.data.code === 0 && res.data.data) {
+    if (res.data.code === 0 && res.data.data) {
       picture.value = res.data.data
-    }else {
+    } else {
       message.error('查询图片详情失败' + res.data.message)
     }
-  }catch (e:any) {
+  } catch (e: any) {
     message.error('查询图片详情失败' + e.message)
   }
 }
@@ -110,7 +119,7 @@ const fetchPictureDetail = async () => {
 const loginUserStore = useLoginUserStore()
 // 是否具有编辑权限
 const canEdit = computed(() => {
-  const loginUser = loginUserStore.loginUser;
+  const loginUser = loginUserStore.loginUser
   // 未登录不可编辑
   if (!loginUser.id) {
     return false
@@ -149,6 +158,4 @@ onMounted(() => {
 })
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>
